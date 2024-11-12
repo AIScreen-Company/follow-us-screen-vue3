@@ -199,11 +199,23 @@ const activeLinkIndex = ref(0)
 let intervalId = null
 
 const sliderStyle = computed(() => {
-  const itemWidth = 100 / links.length
+  const linksArray = links.value // Получаем значение вычисляемого свойства
+  console.log(linksArray.length) // Теперь это будет длина массива
+  const itemWidth = 100 / linksArray.length
+  console.log(itemWidth)
   return {
     width: `${itemWidth}%`,
     transform: `translateX(${activeLinkIndex.value * 100}%)`,
   }
+})
+const links = computed(() => {
+  if (!receivedMessage.value || !receivedMessage.value.links) return []
+  return receivedMessage.value.links.filter((link) => link !== null)
+})
+
+const activeLink = computed(() => {
+  if (!receivedMessage.value || !receivedMessage.value.links) return ''
+  return links.value[activeLinkIndex.value]
 })
 
 const socialLink = (url) => {
@@ -255,16 +267,6 @@ const socialLink = (url) => {
     return require(`@/assets/internet.svg`)
   }
 }
-
-const links = computed(() => {
-  if (!receivedMessage.value || !receivedMessage.value.links) return []
-  return receivedMessage.value.links.filter((link) => link !== null)
-})
-
-const activeLink = computed(() => {
-  if (!receivedMessage.value || !receivedMessage.value.links) return ''
-  return links.value[activeLinkIndex.value]
-})
 
 const accountName = (url) => {
   const patterns = {
