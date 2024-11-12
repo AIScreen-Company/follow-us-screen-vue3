@@ -200,9 +200,7 @@ let intervalId = null
 
 const sliderStyle = computed(() => {
   const linksArray = links.value // Получаем значение вычисляемого свойства
-  console.log(linksArray.length) // Теперь это будет длина массива
   const itemWidth = 100 / linksArray.length
-  console.log(itemWidth)
   return {
     width: `${itemWidth}%`,
     transform: `translateX(${activeLinkIndex.value * 100}%)`,
