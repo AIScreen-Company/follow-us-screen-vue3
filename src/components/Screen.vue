@@ -19,7 +19,7 @@
             receivedMessage.currentBackground.link &&
             receivedMessage.template !== 'Bricks'
               ? `url(${receivedMessage.currentBackground.link})`
-              : socialBg(activeLink)
+              : socialBg(activeLink) && receivedMessage.template !== 'Bricks'
               ? `url(${socialBg(activeLink)})`
               : 'none',
           opacity: receivedMessage.opacity ? receivedMessage.opacity / 100 : 1,
@@ -362,9 +362,6 @@ const startLinkRotation = () => {
     !receivedMessage.value.timer ||
     !links.value.length
   ) {
-    setTimeout(() => {
-      startLinkRotation()
-    }, 1000)
     return
   }
 
