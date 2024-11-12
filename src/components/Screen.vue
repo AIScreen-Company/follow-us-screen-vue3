@@ -19,6 +19,8 @@
             receivedMessage.currentBackground.link &&
             receivedMessage.template !== 'Bricks'
               ? `url(${receivedMessage.currentBackground.link})`
+              : socialBg(activeLink)
+              ? `url(${socialBg(activeLink)})`
               : 'none',
           opacity: receivedMessage.opacity ? receivedMessage.opacity / 100 : 1,
         }"
@@ -270,7 +272,7 @@ const accountName = (url) => {
   const patterns = {
     facebook: /facebook\.com\/(?:profile\.php\?id=)?([^\/?]+)/,
     instagram: /instagram\.com\/([^\/?]+)/,
-    twitter: /x\.com\/([^\/?]+)/,
+    x: /x\.com\/([^\/?]+)/,
     youtube: /youtube\.com\/(?:channel\/|user\/)?([^\/?]+)/,
     skype: /skype\.com\/([^\/?]+)/,
     linkedin: /linkedin\.com\/(?:in|company)\/([^\/?]+)/,
@@ -292,6 +294,56 @@ const accountName = (url) => {
   return url
 }
 
+const socialBg = (url) => {
+  try {
+    if (!url) throw new Error('Invalid URL')
+
+    url = url.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
+    }
+
+    const parsedUrl = new URL(url)
+    const hostname = parsedUrl.hostname.toLowerCase()
+    const pathname = parsedUrl.pathname.toLowerCase()
+
+    const paths = {
+      youtube: /^(?:www\.)?youtube\.com/i,
+      instagram: /^(?:www\.)?instagram\.com/i,
+      facebook: /^(?:www\.)?facebook\.com/i,
+      linkedin: /^(?:www\.)?linkedin\.com/i,
+      twitter: /^(?:www\.)?twitter\.com/i,
+      x: /^(?:www\.)?x\.com/i,
+      vimeo: /^(?:www\.)?vimeo\.com/i,
+      pinterest: /^(?:www\.)?pinterest\.com/i,
+      flickr: /^(?:www\.)?flickr\.com/i,
+      snapchat: /^(?:www\.)?snapchat\.com/i,
+      github: /^(?:www\.)?github\.com/i,
+      medium: /^(?:www\.)?medium\.com/i,
+      dribbble: /^(?:www\.)?dribbble\.com/i,
+    }
+
+    let icon = ''
+    for (const platform in paths) {
+      const isLinkedin = platform === 'linkedin'
+
+      if (
+        (isLinkedin &&
+          paths[platform].test(hostname) &&
+          /^(\/in|\/company|\/pub)\//i.test(pathname)) ||
+        (!isLinkedin && paths[platform].test(hostname))
+      ) {
+        icon = `${platform}-bg.png`
+        break
+      }
+    }
+
+    return require(`@/assets/${icon}`)
+  } catch (error) {
+    return
+  }
+}
+
 const receiveMessage = (event) => {
   if (
     !event.data ||
@@ -309,8 +361,13 @@ const startLinkRotation = () => {
     !receivedMessage.value ||
     !receivedMessage.value.timer ||
     !links.value.length
-  )
+  ) {
+    setTimeout(() => {
+      startLinkRotation()
+    }, 1000)
     return
+  }
+
   intervalId = setInterval(() => {
     activeLinkIndex.value = (activeLinkIndex.value + 1) % links.value.length
   }, receivedMessage.value.timer * 1000)
@@ -340,6 +397,7 @@ const getBricksItemWidth = (index) => {
 
 onMounted(() => {
   window.addEventListener('message', receiveMessage)
+  startLinkRotation()
 })
 
 onBeforeUnmount(() => {
