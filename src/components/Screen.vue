@@ -269,29 +269,64 @@ const socialLink = (url) => {
 }
 
 const accountName = (url) => {
-  const patterns = {
-    facebook: /facebook\.com\/(?:profile\.php\?id=)?([^\/?]+)/,
-    instagram: /instagram\.com\/([^\/?]+)/,
-    x: /x\.com\/([^\/?]+)/,
-    youtube: /youtube\.com\/(?:channel\/|user\/)?([^\/?]+)/,
-    skype: /skype\.com\/([^\/?]+)/,
-    linkedin: /linkedin\.com\/(?:in|company)\/([^\/?]+)/,
-    vimeo: /vimeo\.com\/([^\/?]+)/,
-    pinterest: /pinterest\.com\/([^\/?]+)/,
-    flickr: /flickr\.com\/photos\/([^\/?]+)/,
-    snapchat: /snapchat\.com\/add\/([^\/?]+)/,
-    github: /github\.com\/([^\/?]+)/,
-    medium: /medium\.com\/@?([^\/?]+)/,
-    dribbble: /dribbble\.com\/([^\/?]+)/,
-  }
+  try {
+    if (!url) throw new Error('Invalid URL')
 
-  for (const platform in patterns) {
-    const match = url.match(patterns[platform])
-    if (match && match[1]) {
-      return match[1].includes('@') ? match[1] : `@${match[1]}`
+    url = url.trim()
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`
     }
+
+    const parsedUrl = new URL(url)
+    let hostname = parsedUrl.hostname.replace(/^www\./, '') // Убираем "www"
+    let pathname = parsedUrl.pathname.toLowerCase()
+
+    // Удаляем завершающий слэш в pathname
+    if (pathname.endsWith('/')) {
+      pathname = pathname.slice(0, -1)
+    }
+
+    const patterns = {
+      facebook: /facebook\.com\/(?:profile\.php\?id=)?([^\/?]+)/,
+      instagram: /instagram\.com\/([^\/?]+)/,
+      x: /x\.com\/([^\/?]+)/,
+      youtube: /youtube\.com\/(?:channel\/|user\/)?([^\/?]+)/,
+      skype: /skype\.com\/([^\/?]+)/,
+      linkedin: /linkedin\.com\/(?:in|company)\/([^\/?]+)/,
+      vimeo: /vimeo\.com\/([^\/?]+)/,
+      pinterest: /pinterest\.com\/([^\/?]+)/,
+      flickr: /flickr\.com\/photos\/([^\/?]+)/,
+      snapchat: /snapchat\.com\/add\/([^\/?]+)/,
+      github: /github\.com\/([^\/?]+)/,
+      medium: /medium\.com\/@?([^\/?]+)/,
+      dribbble: /dribbble\.com\/([^\/?]+)/,
+    }
+
+    // Проверяем известные платформы
+    for (const platform in patterns) {
+      const match = url.match(patterns[platform])
+      if (match && match[1]) {
+        // Возвращаем имя аккаунта, если оно найдено
+        return match[1].includes('@') ? match[1] : `@${match[1]}`
+      }
+    }
+
+    // Если имя аккаунта не найдено
+    let fullUrl = `${hostname}${pathname}`
+    if (fullUrl.endsWith('/')) {
+      fullUrl = fullUrl.slice(0, -1) // Убираем завершающий слэш, если он есть
+    }
+
+    if (fullUrl.length > 50) {
+      return hostname // Если ссылка длинная, возвращаем только доменное имя
+    }
+
+    return fullUrl // Если ссылка короткая, возвращаем весь путь
+  } catch (error) {
+    // Возвращаем домен "Invalid URL" на случай ошибки
+    console.error('Invalid URL:', error.message)
+    return 'Invalid URL'
   }
-  return url
 }
 
 const socialBg = (url) => {
